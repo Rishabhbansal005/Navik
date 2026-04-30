@@ -1,5 +1,5 @@
 # Navik — AR Item Finder
-### Swift Student Challenge 2025 · iOS 26 · Liquid Glass
+
 
 > Never lose track of your belongings again. Navik uses ARKit to save the exact real‑world location of your items and guides you back to them with an AR compass.
 
