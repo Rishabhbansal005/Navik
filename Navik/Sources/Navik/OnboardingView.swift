@@ -7,7 +7,7 @@ struct OnboardingView: View {
     private let pages: [OBPage] = [
         OBPage(icon: "location.fill",        color: AppTheme.primary,
                title: "Welcome to Navik",
-               body: "The smartest way to remember where you left things. Designed to assist those facing memory challenges with the power of AR."),
+               body: "The smartest way to remember where you left things. Powered by AR and LiDAR."),
         OBPage(icon: "square.grid.2x2.fill", color: AppTheme.accent,
                title: "Organise by Room",
                body: "Create rooms that match your home. Keep everything neatly organised."),
