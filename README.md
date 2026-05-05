@@ -157,16 +157,5 @@ User opens Navik
                 └── Haptics pulse faster as you get closer ✅
 ```
 
----
-
-## 🔮 Planned Features
-
-- [ ] Notifications / reminders for items not found in time
-- [ ] Multi-floor support
-- [ ] Shared items between family members (iCloud sync)
-- [ ] Voice-based item search ("Hey Navik, where are my keys?")
-- [ ] Apple Watch companion for haptic guidance on wrist
-
-
 
 > *"Navik" (नाविक) — meaning Navigator in Hindi. Your personal guide to finding what matters.*
