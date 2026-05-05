@@ -17,7 +17,7 @@ Instead of searching your entire home, Navik uses **Augmented Reality** and **Ap
 
 [![Navik App Demo](https://img.youtube.com/vi/CWtFoZM_KBs/maxresdefault.jpg)](https://www.youtube.com/watch?v=CWtFoZM_KBs)
 
-> ⚠️ *This demo shows an earlier version of Navik. The current version includes improved AR navigation, haptic feedback, and a redesigned room management system. Full updated demo coming soon.*
+> ⚠️ *This demo shows an earlier version of Navik. The current version includes improved AR navigation, haptic feedback, and a redesigned room management system. *
 
 ---
 
