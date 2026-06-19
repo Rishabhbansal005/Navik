@@ -192,6 +192,8 @@ struct ScanGuideOverlay: View {
     let onStart: () -> Void
     @State private var pulse = false
 
+    private let hasLiDAR = ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh)
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.65).ignoresSafeArea()
@@ -204,7 +206,7 @@ struct ScanGuideOverlay: View {
                             .frame(width: 140 * scale, height: 140 * scale)
                             .scaleEffect(pulse ? 1.08 : 1.0)
                     }
-                    Image(systemName: "sensor.tag.radiowaves.forward.fill")
+                    Image(systemName: hasLiDAR ? "sensor.tag.radiowaves.forward.fill" : "camera.viewfinder")
                         .font(.system(size: 52))
                         .foregroundStyle(AppTheme.primary)
                         .symbolEffect(.pulse)
@@ -218,9 +220,23 @@ struct ScanGuideOverlay: View {
                         .multilineTextAlignment(.center).lineSpacing(4)
                 }
 
+                // Non-LiDAR tip banner
+                if !hasLiDAR {
+                    HStack(spacing: 8) {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundStyle(AppTheme.warning)
+                        Text("Scan walls, floor & furniture for best accuracy")
+                            .font(.navCaption.weight(.semibold))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(AppTheme.warning.opacity(0.15), in: Capsule())
+                    .padding(.horizontal, AppTheme.xl)
+                }
+
                 VStack(spacing: 12) {
                     guideStep("1", text: "Slowly move your phone around the area")
-                    guideStep("2", text: "Include floor, walls, and furniture")
+                    guideStep("2", text: hasLiDAR ? "Include floor, walls, and furniture" : "Include floor, walls, and distinctive objects")
                     guideStep("3", text: "Wait for quality to reach Good or better")
                 }
                 .padding(.horizontal, AppTheme.xl)

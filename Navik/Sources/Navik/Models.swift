@@ -94,26 +94,50 @@ extension simd_float4x4 {
 
     func distance(to other: simd_float4x4) -> Float {
         let d = position - other.position
+        // 3-D Euclidean distance — accounts for items above/below camera level
         return sqrt(d.x*d.x + d.y*d.y + d.z*d.z)
     }
 
-    /// Signed angle in radians from camera forward to target (horizontal plane)
+    /// Horizontal floor-plane distance (used for proximity bar, ignores height)
+    func flatDistance(to other: simd_float4x4) -> Float {
+        let dx = position.x - other.position.x
+        let dz = position.z - other.position.z
+        return sqrt(dx*dx + dz*dz)
+    }
+
+    /// Signed bearing angle in radians from camera forward → target, on the horizontal plane.
+    /// ARKit camera looks along -Z; columns.2 is the camera's local Z axis in world space,
+    /// so the world-space forward vector is -columns.2 (x & z components only).
     func horizontalBearing(to target: simd_float4x4) -> Float {
-        let forward  = SIMD3<Float>(-columns.2.x, 0, -columns.2.z)
-        let toTarget = SIMD3<Float>(target.position.x - position.x, 0,
-                                    target.position.z - position.z)
-        let dot = forward.x * toTarget.x + forward.z * toTarget.z
-        let det = forward.x * toTarget.z - forward.z * toTarget.x
+        // Normalised camera forward projected onto the XZ plane
+        let fwd = normalize(SIMD2<Float>(-columns.2.x, -columns.2.z))
+        // Direction from camera to target on the XZ plane
+        let dx  = target.position.x - position.x
+        let dz  = target.position.z - position.z
+        let len = sqrt(dx*dx + dz*dz)
+        guard len > 0.001 else { return 0 }          // avoid NaN when on top of target
+        let toT = SIMD2<Float>(dx / len, dz / len)
+        // 2-D cross product gives the sign; dot gives the cosine
+        let dot = fwd.x * toT.x + fwd.y * toT.y
+        let det = fwd.x * toT.y - fwd.y * toT.x
         return atan2(det, dot)
     }
 }
 
 // MARK: - Navigation constants
 enum NavConstants {
-    static let reachedThreshold:   Float = 0.25   // metres
-    static let veryCloseThreshold: Float = 0.75
-    static let closeThreshold:     Float = 2.0
+    // ── Distance thresholds (metres) ──────────────────────────────────
+    static let reachedThreshold:   Float = 0.30   // "You found it" trigger
+    static let veryCloseThreshold: Float = 0.80   // green ring
+    static let closeThreshold:     Float = 2.5    // amber ring
     static let mediumThreshold:    Float = 5.0
-    static let bearingSmoothing:   Float = 0.15   // lower = smoother
-    static let distanceSmoothing:  Float = 0.12
+
+    // ── EMA smoothing factors (0 = frozen, 1 = raw/instant) ───────────
+    // LiDAR devices: tighter smoothing because position is already very accurate
+    static let bearingSmoothing:   Float = 0.20   // snappy but jitter-free
+    static let distanceSmoothing:  Float = 0.15
+
+    // Non-LiDAR devices: heavier smoothing to hide noisier world-map tracking
+    static let bearingSmoothingNoLiDAR:   Float = 0.12
+    static let distanceSmoothingNoLiDAR:  Float = 0.10
 }

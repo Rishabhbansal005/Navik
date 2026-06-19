@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var page = 0
+    @State private var movingForward = true
 
     private let pages: [OBPage] = [
         OBPage(icon: "location.fill",        color: AppTheme.primary,
@@ -35,8 +36,8 @@ struct OnboardingView: View {
                 OBPageView(page: pages[page])
                     .id(page) 
                     .transition(.asymmetric(
-                        insertion:  .move(edge: .trailing).combined(with: .opacity),
-                        removal:    .move(edge: .leading).combined(with: .opacity)
+                        insertion:  .move(edge: movingForward ? .trailing : .leading).combined(with: .opacity),
+                        removal:    .move(edge: movingForward ? .leading : .trailing).combined(with: .opacity)
                     ))
                     .animation(.spring(duration: 0.45), value: page)
 
@@ -46,6 +47,7 @@ struct OnboardingView: View {
             // Native iOS back button — top left, only from page 2 onward
             if page > 0 {
                 Button {
+                    movingForward = false
                     withAnimation(.spring(duration: 0.4)) { page -= 1 }
                 } label: {
                     Image(systemName: "chevron.left")
@@ -77,6 +79,7 @@ struct OnboardingView: View {
             // Next / Get Started
             Button {
                 if page < pages.count - 1 {
+                    movingForward = true
                     withAnimation(.spring(duration: 0.4)) { page += 1 }
                 } else {
                     hasSeenOnboarding = true

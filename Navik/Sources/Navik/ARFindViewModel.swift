@@ -12,11 +12,16 @@ final class ARFindViewModel: NSObject, ObservableObject, @unchecked Sendable {
     @Published var itemReached      = false
     @Published var trackingQuality: TrackingQuality = .unavailable
     @Published var relocMessage     = "Scan the area where you saved this item…"
+    @Published var isLiDARDevice    = false
 
     // Smoothed values (exponential moving average)
     private var smoothBearing:  Float = 0
     private var smoothDistance: Float = 0
     private var frameCount      = 0
+
+    // Adaptive smoothing — heavier on non-LiDAR to hide noisier world map tracking
+    private var bearingAlpha:  Float { isLiDARDevice ? NavConstants.bearingSmoothing  : NavConstants.bearingSmoothingNoLiDAR  }
+    private var distanceAlpha: Float { isLiDARDevice ? NavConstants.distanceSmoothing : NavConstants.distanceSmoothingNoLiDAR }
 
     var arView: ARView?
     var targetTransform: simd_float4x4?
@@ -25,6 +30,7 @@ final class ARFindViewModel: NSObject, ObservableObject, @unchecked Sendable {
     @MainActor func setup(_ arView: ARView, item: ItemModel) {
         self.arView          = arView
         self.targetTransform = item.anchorTransform
+        self.isLiDARDevice   = ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh)
 
         let config = ARWorldTrackingConfiguration()
         config.planeDetection       = [.horizontal, .vertical]
@@ -61,13 +67,16 @@ final class ARFindViewModel: NSObject, ObservableObject, @unchecked Sendable {
         let rawDist = cameraTransform.distance(to: target)
         let rawBear = cameraTransform.horizontalBearing(to: target)
 
-        // Exponential moving average smoothing
-        smoothDistance = smoothDistance * (1 - NavConstants.distanceSmoothing) + rawDist * NavConstants.distanceSmoothing
-        smoothBearing  = lerpAngle(smoothBearing, rawBear, t: NavConstants.bearingSmoothing)
+        // Exponential moving average — adaptive per device capability
+        smoothDistance = smoothDistance * (1 - distanceAlpha) + rawDist * distanceAlpha
+        smoothBearing  = lerpAngle(smoothBearing, rawBear, t: bearingAlpha)
 
         distance    = smoothDistance
         bearing     = smoothBearing
         itemReached = smoothDistance < NavConstants.reachedThreshold
+
+        // Arrow is "off screen" when the target is behind the camera (|bearing| > ~80°)
+        isOffScreen = abs(smoothBearing) > (.pi * 0.44)
     }
 
     func applyTrackingState(_ state: ARCamera.TrackingState) {
