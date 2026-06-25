@@ -47,7 +47,8 @@ struct AddItemView: View {
                         iconName:            selectedSymbol,
                         emoji:               iconType == .emoji  ? selectedEmoji     : nil,
                         photoData:           iconType == .photo  ? selectedPhotoData : nil,
-                        locationDescription: locationDesc
+                        locationDescription: locationDesc,
+                        parentDismiss:       { dismiss() }
                     )
                 }
             }

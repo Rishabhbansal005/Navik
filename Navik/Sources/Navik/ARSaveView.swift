@@ -13,6 +13,7 @@ struct ARSaveView: View {
     let emoji:               String?
     let photoData:           Data?
     let locationDescription: String
+    var parentDismiss:       (() -> Void)? = nil
 
     @StateObject private var vm = ARSaveViewModel()
     @State private var saved      = false
@@ -182,7 +183,9 @@ struct ARSaveView: View {
         dataStore.addItem(item)
         withAnimation(.spring(duration: 0.45)) { saved = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
-            vm.cleanup(); dismiss()
+            vm.cleanup()
+            dismiss()
+            parentDismiss?()
         }
     }
 }
